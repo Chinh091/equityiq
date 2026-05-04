@@ -3,7 +3,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock
 
 import pytest
-
 from equityiq_agents.roles import _parse_critique, _parse_subqueries, analyze, critique, plan
 
 
@@ -60,9 +59,7 @@ async def test_plan_truncates_to_max() -> None:
 async def test_analyze_inlines_contexts_with_accessions() -> None:
     llm = AsyncMock()
     llm.generate = AsyncMock(return_value="answer text")
-    out = await analyze(
-        llm, question="q", contexts=[("acc-A", "ctx A"), ("acc-B", "ctx B")]
-    )
+    out = await analyze(llm, question="q", contexts=[("acc-A", "ctx A"), ("acc-B", "ctx B")])
     assert out == "answer text"
     prompt = llm.generate.await_args.kwargs["prompt"]
     assert "[acc-A]" in prompt

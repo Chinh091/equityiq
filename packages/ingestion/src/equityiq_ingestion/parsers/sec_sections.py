@@ -36,9 +36,7 @@ _ITEM_PATTERNS: dict[str, tuple[str, re.Pattern[str]]] = {
     ),
     "7": (
         "Management's Discussion and Analysis",
-        re.compile(
-            r"\bItem\s*7\.?\s*Management['’]s\s+Discussion\s+and\s+Analysis", re.IGNORECASE
-        ),
+        re.compile(r"\bItem\s*7\.?\s*Management['’]s\s+Discussion\s+and\s+Analysis", re.IGNORECASE),
     ),
     "7A": (
         "Quantitative and Qualitative Disclosures About Market Risk",
@@ -71,9 +69,16 @@ class ParsedFiling:
 
 def _html_to_text(html: str) -> str:
     tree = HTMLParser(html)
-    for sel in ("script", "style", "noscript", "head", "ix:header"):
+    # Standard CSS selectors (selectolax does not accept `:` in tag names).
+    for sel in ("script", "style", "noscript", "head"):
         for n in tree.css(sel):
             n.decompose()
+    # XBRL inline tags (ix:header, ix:hidden, etc.) — strip via tag-name match.
+    if tree.body is not None:
+        for n in tree.body.iter():
+            tag = n.tag or ""
+            if tag.startswith("ix:") or tag in ("ix:header", "ix:hidden"):
+                n.decompose()
     text = tree.body.text(separator=" ") if tree.body else tree.text(separator=" ")
     # Collapse whitespace; keep newlines as boundaries for chunker.
     text = re.sub(r" ", " ", text)

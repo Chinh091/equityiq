@@ -3,7 +3,6 @@ from __future__ import annotations
 from unittest.mock import AsyncMock
 
 import pytest
-
 from equityiq_eval.judge import (
     LLMJudge,
     _parse_judge_json,

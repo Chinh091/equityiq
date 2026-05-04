@@ -1,6 +1,5 @@
 from equityiq_ingestion import parse_10k_html
 
-
 # Minimal 10-K-shaped HTML: TOC pointing at items, then bodies.
 _FIXTURE = """
 <html><body>

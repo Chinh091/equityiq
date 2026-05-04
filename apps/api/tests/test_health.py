@@ -1,7 +1,6 @@
 import pytest
-from fastapi.testclient import TestClient
-
 from equityiq_api import app
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture
@@ -15,11 +14,5 @@ def test_health_ok(client: TestClient) -> None:
     assert resp.json() == {"status": "ok"}
 
 
-def test_thesis_validates_ticker(client: TestClient) -> None:
-    resp = client.post("/thesis/stream", json={"ticker": "lowercase", "question": "what?"})
-    assert resp.status_code == 422
-
-
-def test_thesis_validates_question_length(client: TestClient) -> None:
-    resp = client.post("/thesis/stream", json={"ticker": "NVDA", "question": "hi"})
-    assert resp.status_code == 422
+# /thesis/stream validation is covered in test_thesis_stream.py with the
+# agent_loop dependency override.

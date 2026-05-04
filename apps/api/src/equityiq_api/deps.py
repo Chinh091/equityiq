@@ -3,11 +3,10 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
-
 from equityiq_agents import AgentLoop, AgentSettings, RetrieveTool
 from equityiq_llm import LLMSettings, ModelRouter, OllamaClient
 from equityiq_retrieval import HybridRetriever, RetrievalSettings, TEIReranker
+from fastapi import FastAPI, Request
 
 OLLAMA_KEY = "ollama_client"
 ROUTER_KEY = "model_router"

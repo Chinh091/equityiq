@@ -4,11 +4,10 @@ from datetime import datetime
 from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
-from typer.testing import CliRunner
-
 from equityiq_cli.main import app
 from equityiq_ingestion import IngestStats
 from equityiq_retrieval.types import RetrievalResult
+from typer.testing import CliRunner
 
 
 @pytest.fixture

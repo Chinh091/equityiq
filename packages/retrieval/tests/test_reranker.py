@@ -1,7 +1,6 @@
 import httpx
 import pytest
 import respx
-
 from equityiq_retrieval import RetrievalSettings, TEIReranker
 
 

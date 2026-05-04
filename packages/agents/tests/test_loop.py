@@ -4,7 +4,6 @@ from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
-
 from equityiq_agents import (
     AgentLoop,
     AgentSettings,
@@ -43,9 +42,7 @@ class _FakeLLM:
     def __init__(self, responses: dict[str, list[str]]) -> None:
         self._responses = {k: list(v) for k, v in responses.items()}
 
-    async def generate(
-        self, *, prompt: str, tier, system=None, options=None, format=None
-    ) -> str:
+    async def generate(self, *, prompt: str, tier, system=None, options=None, format=None) -> str:
         bucket = self._responses.get(tier.value)
         if not bucket:
             raise RuntimeError(f"no fake response for tier {tier}")

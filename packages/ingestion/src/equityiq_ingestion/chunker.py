@@ -22,7 +22,6 @@ from dataclasses import dataclass
 
 import tiktoken
 
-
 _SENT_SPLIT = re.compile(
     r"(?<=[.!?])\s+(?=[A-Z(\"'\[])"  # split on terminal punct followed by Cap
     r"|\n{2,}"  # or blank line

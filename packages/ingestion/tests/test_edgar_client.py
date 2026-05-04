@@ -1,7 +1,6 @@
 import httpx
 import pytest
 import respx
-
 from equityiq_ingestion import EdgarClient, FormType
 from equityiq_ingestion.config import IngestionSettings
 

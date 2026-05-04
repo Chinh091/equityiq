@@ -6,7 +6,6 @@ from pathlib import Path
 from unittest.mock import AsyncMock
 
 import pytest
-
 from equityiq_eval.config import EvalSettings
 from equityiq_eval.runner import EvalRunner, load_dataset, write_report
 from equityiq_eval.types import EvalReport, GoldenItem

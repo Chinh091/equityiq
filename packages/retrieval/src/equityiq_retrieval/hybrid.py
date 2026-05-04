@@ -28,15 +28,15 @@ Notes:
 from __future__ import annotations
 
 import asyncio
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
-from typing import AsyncIterator
 
 import asyncpg
-from pydantic import BaseModel, Field
-
 from equityiq_llm import OllamaClient
 from equityiq_observability import observed
+from pydantic import BaseModel, Field
+
 from equityiq_retrieval.config import RetrievalSettings
 from equityiq_retrieval.fusion import reciprocal_rank_fusion
 from equityiq_retrieval.reranker import TEIReranker
@@ -197,7 +197,7 @@ class HybridRetriever:
         JOIN filings f ON f.id = c.filing_id
         JOIN filing_sections s ON s.id = c.section_id
         WHERE to_tsvector('english', c.text) @@ plainto_tsquery('english', $1)
-          {('AND ' + where[len('WHERE '):]) if where else ''}
+          {("AND " + where[len("WHERE ") :]) if where else ""}
         ORDER BY lexical_score DESC
         LIMIT {pool}
         """
@@ -222,9 +222,7 @@ class HybridRetriever:
         ]
 
     @staticmethod
-    def _merge(
-        dense: list[_Candidate], lexical: list[_Candidate]
-    ) -> dict[int, _Candidate]:
+    def _merge(dense: list[_Candidate], lexical: list[_Candidate]) -> dict[int, _Candidate]:
         out: dict[int, _Candidate] = {}
         for c in dense:
             out[c.chunk_id] = c
@@ -246,7 +244,7 @@ class HybridRetriever:
             ticker=c.ticker,
             accession=c.accession,
             form_type=c.form_type,
-            filed_at=c.filed_at,  # type: ignore[arg-type]
+            filed_at=c.filed_at,
             source_url=c.source_url,
             chunk_ord=c.chunk_ord,
             dense_score=c.dense_score,
@@ -254,9 +252,7 @@ class HybridRetriever:
             fused_score=fused,
         )
 
-    async def _rerank(
-        self, query: str, results: list[RetrievalResult]
-    ) -> list[RetrievalResult]:
+    async def _rerank(self, query: str, results: list[RetrievalResult]) -> list[RetrievalResult]:
         assert self._reranker is not None
         ranked = await self._reranker.rerank(query, [r.text for r in results])
         out: list[RetrievalResult] = []

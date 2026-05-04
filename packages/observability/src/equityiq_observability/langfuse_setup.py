@@ -31,7 +31,9 @@ def get_langfuse() -> Any:
     if _client is not None:
         return _client
     settings = LangfuseSettings()
-    if not (settings.langfuse_enabled and settings.langfuse_public_key and settings.langfuse_secret_key):
+    if not (
+        settings.langfuse_enabled and settings.langfuse_public_key and settings.langfuse_secret_key
+    ):
         return None
     try:
         from langfuse import Langfuse
@@ -55,7 +57,9 @@ def shutdown_langfuse() -> None:
         _client = None
 
 
-def observed(name: str | None = None) -> Callable[[Callable[P, Awaitable[R]]], Callable[P, Awaitable[R]]]:
+def observed(
+    name: str | None = None,
+) -> Callable[[Callable[P, Awaitable[R]]], Callable[P, Awaitable[R]]]:
     """Decorator that wires a coroutine into Langfuse tracing if available.
 
     Falls back to a no-op when Langfuse isn't configured, so tests don't need it.
@@ -63,7 +67,7 @@ def observed(name: str | None = None) -> Callable[[Callable[P, Awaitable[R]]], C
 
     def decorator(fn: Callable[P, Awaitable[R]]) -> Callable[P, Awaitable[R]]:
         try:
-            from langfuse.decorators import observe  # type: ignore[import-untyped]
+            from langfuse.decorators import observe
         except ImportError:
             return fn
 

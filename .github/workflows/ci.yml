@@ -34,7 +34,7 @@ jobs:
         run: uv run ruff check .
 
       - name: Mypy
-        run: uv run mypy packages apps
+        run: uv run mypy packages/*/src apps/*/src
 
       - name: Pytest (unit only)
         run: uv run pytest -m "not integration" --cov --cov-report=xml

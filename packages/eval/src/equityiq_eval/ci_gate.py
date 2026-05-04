@@ -16,16 +16,14 @@ from __future__ import annotations
 import asyncio
 import json
 import subprocess
-import sys
 from pathlib import Path
 
 import typer
-from rich.console import Console
-from rich.table import Table
-
 from equityiq_llm import OllamaClient
 from equityiq_retrieval import HybridRetriever
 from equityiq_retrieval.reranker import TEIReranker
+from rich.console import Console
+from rich.table import Table
 
 from equityiq_eval.config import EvalSettings
 from equityiq_eval.runner import EvalRunner, write_report
@@ -40,7 +38,7 @@ def _load_baseline(path: Path) -> EvalReport | None:
         return None
     try:
         return EvalReport.model_validate_json(path.read_text(encoding="utf-8"))
-    except Exception as e:  # noqa: BLE001
+    except Exception as e:
         console.print(f"[yellow]baseline parse failed: {e}; treating as missing[/yellow]")
         return None
 

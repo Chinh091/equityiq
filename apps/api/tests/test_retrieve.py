@@ -2,11 +2,10 @@ from datetime import datetime
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi.testclient import TestClient
-
 from equityiq_api import app
 from equityiq_api.deps import get_retriever
 from equityiq_retrieval import RetrievalResult
+from fastapi.testclient import TestClient
 
 
 @pytest.fixture

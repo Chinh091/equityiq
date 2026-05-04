@@ -49,9 +49,7 @@ class AgentLoop:
         self._retrieve = retrieve
         self._settings = settings or AgentSettings()
 
-    async def run(
-        self, *, question: str, ticker: str | None = None
-    ) -> AsyncIterator[AgentEvent]:
+    async def run(self, *, question: str, ticker: str | None = None) -> AsyncIterator[AgentEvent]:
         subqueries = await plan(
             self._llm,
             question=question,

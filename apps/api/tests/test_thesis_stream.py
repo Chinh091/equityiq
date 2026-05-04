@@ -5,8 +5,6 @@ from collections.abc import AsyncIterator
 from unittest.mock import AsyncMock
 
 import pytest
-from fastapi.testclient import TestClient
-
 from equityiq_agents.events import (
     AgentEvent,
     CritiqueEvent,
@@ -18,6 +16,7 @@ from equityiq_agents.events import (
 )
 from equityiq_api import app
 from equityiq_api.deps import get_agent_loop
+from fastapi.testclient import TestClient
 
 
 def _scripted_events() -> list[AgentEvent]:

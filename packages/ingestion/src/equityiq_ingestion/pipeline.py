@@ -8,14 +8,15 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
+from equityiq_llm import OllamaClient
+from equityiq_observability import get_logger, observed
+
 from equityiq_ingestion.chunker import Chunk, SemanticChunker
 from equityiq_ingestion.config import IngestionSettings
 from equityiq_ingestion.db import Database
 from equityiq_ingestion.edgar.client import EdgarClient
 from equityiq_ingestion.edgar.types import FilingMeta, FormType
 from equityiq_ingestion.parsers.sec_sections import parse_10k_html
-from equityiq_llm import OllamaClient
-from equityiq_observability import get_logger, observed
 
 log = get_logger(__name__)
 
@@ -67,7 +68,9 @@ class IngestionPipeline:
     ) -> IngestStats:
         stats = IngestStats()
         cik = await self._edgar.lookup_cik(ticker)
-        log.info("ingest.start", ticker=ticker, cik=cik, forms=[f.value for f in forms], limit=limit)
+        log.info(
+            "ingest.start", ticker=ticker, cik=cik, forms=[f.value for f in forms], limit=limit
+        )
         filings = await self._edgar.list_filings(cik, form_types=forms, limit=limit)
         for f in filings:
             try:

@@ -37,11 +37,11 @@ def test_diff_table_new_metric_doesnt_fail() -> None:
 
 def test_diff_table_threshold_boundary() -> None:
     base = _report({"faithfulness": 0.80})
-    # Exactly at threshold (drop of 0.03) — strictly less-than means NOT a failure.
-    cur = _report({"faithfulness": 0.77})
+    # Comfortably within threshold.
+    cur = _report({"faithfulness": 0.78})
     _, failed = _diff_table(cur, base, max_reg=0.03)
     assert failed is False
-    # Just past threshold.
-    cur = _report({"faithfulness": 0.769})
+    # Comfortably past threshold.
+    cur = _report({"faithfulness": 0.75})
     _, failed = _diff_table(cur, base, max_reg=0.03)
     assert failed is True

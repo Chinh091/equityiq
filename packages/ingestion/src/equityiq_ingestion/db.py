@@ -6,10 +6,9 @@ pgvector. A separate retrieval package owns read paths.
 
 from __future__ import annotations
 
-from collections.abc import Iterable, Sequence
+from collections.abc import AsyncIterator, Iterable, Sequence
 from contextlib import asynccontextmanager
 from dataclasses import dataclass
-from typing import AsyncIterator
 
 import asyncpg
 

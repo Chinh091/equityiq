@@ -47,10 +47,15 @@ select = [
     "ASYNC",              # async lint
     "TID",                # tidy imports
 ]
-ignore = ["E501"]  # line length handled by formatter
+ignore = [
+    "E501",   # line length handled by formatter
+    "B008",   # FastAPI Depends() and typer.Option() in defaults are idiomatic
+    "UP047",  # PEP-695 type-param syntax is fine but not required
+]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**/*.py" = ["S101"]  # asserts ok in tests
+"packages/ingestion/src/equityiq_ingestion/parsers/*.py" = ["RUF001"]  # intentional unicode in regex/cleanup
 
 [tool.mypy]
 python_version = "3.12"
@@ -61,7 +66,7 @@ disallow_untyped_decorators = false
 plugins = ["pydantic.mypy"]
 
 [[tool.mypy.overrides]]
-module = ["langfuse.*", "ollama.*", "ragas.*", "llama_index.*", "neo4j.*"]
+module = ["langfuse.*", "ollama.*", "ragas.*", "llama_index.*", "neo4j.*", "asyncpg.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

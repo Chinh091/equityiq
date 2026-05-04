@@ -9,7 +9,8 @@ import structlog
 
 
 def configure_logging(level: str | None = None) -> None:
-    log_level = (level or os.getenv("LOG_LEVEL", "INFO")).upper()
+    raw = level if level is not None else os.getenv("LOG_LEVEL", "INFO")
+    log_level = (raw or "INFO").upper()
 
     logging.basicConfig(
         format="%(message)s",
@@ -40,4 +41,4 @@ def configure_logging(level: str | None = None) -> None:
 
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
-    return structlog.get_logger(name)
+    return structlog.get_logger(name)  # type: ignore[no-any-return]

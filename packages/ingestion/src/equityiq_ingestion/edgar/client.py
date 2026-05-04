@@ -150,10 +150,7 @@ class EdgarClient:
             acc = accs[i]
             acc_nodash = acc.replace("-", "")
             doc = primary[i]
-            url = (
-                f"https://www.sec.gov/Archives/edgar/data/"
-                f"{int(cik)}/{acc_nodash}/{doc}"
-            )
+            url = f"https://www.sec.gov/Archives/edgar/data/{int(cik)}/{acc_nodash}/{doc}"
             filed_at = datetime.fromisoformat(filed[i])
             period_of_report = None
             p = period[i] if i < len(period) else ""

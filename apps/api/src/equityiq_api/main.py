@@ -3,18 +3,8 @@ from __future__ import annotations
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI
-from sse_starlette.sse import EventSourceResponse
-
 from equityiq_agents import AgentLoop
 from equityiq_agents.events import serialize_event
-from equityiq_api.deps import get_agent_loop, get_retriever, lifespan_state
-from equityiq_api.schemas import (
-    HealthResponse,
-    RetrieveRequest,
-    RetrieveResponse,
-    ThesisRequest,
-)
 from equityiq_observability import (
     configure_logging,
     get_logger,
@@ -22,6 +12,16 @@ from equityiq_observability import (
     shutdown_langfuse,
 )
 from equityiq_retrieval import HybridRetriever, RetrievalQuery
+from fastapi import Depends, FastAPI
+from sse_starlette.sse import EventSourceResponse
+
+from equityiq_api.deps import get_agent_loop, get_retriever, lifespan_state
+from equityiq_api.schemas import (
+    HealthResponse,
+    RetrieveRequest,
+    RetrieveResponse,
+    ThesisRequest,
+)
 
 log = get_logger(__name__)
 
@@ -85,10 +85,9 @@ async def thesis_stream(
     return EventSourceResponse(_stream_agent(loop, req), ping=15)
 
 
-@observed("thesis.agent_stream")
-async def _stream_agent(
-    loop: AgentLoop, req: ThesisRequest
-) -> AsyncIterator[dict[str, str]]:
+async def _stream_agent(loop: AgentLoop, req: ThesisRequest) -> AsyncIterator[dict[str, str]]:
+    # @observed not applied — Langfuse decorator types coroutines, not async generators.
+    # Tracing happens inside AgentLoop sub-steps.
     async for evt in loop.run(question=req.question, ticker=req.ticker):
         yield {"event": evt.type, "data": serialize_event(evt)}
     yield {"event": "done", "data": "1"}

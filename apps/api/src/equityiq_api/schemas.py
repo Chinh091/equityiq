@@ -2,9 +2,8 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from pydantic import BaseModel, Field, StringConstraints
-
 from equityiq_retrieval import RetrievalResult
+from pydantic import BaseModel, Field, StringConstraints
 
 Ticker = Annotated[str, StringConstraints(min_length=1, max_length=10, pattern=r"^[A-Z.\-]+$")]
 

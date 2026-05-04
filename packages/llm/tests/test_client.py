@@ -3,7 +3,6 @@ import json
 import httpx
 import pytest
 import respx
-
 from equityiq_llm import LLMSettings, ModelTier, OllamaClient
 from equityiq_llm.client import OllamaError
 
@@ -80,5 +79,6 @@ async def test_unexpected_shape_raises(settings: LLMSettings) -> None:
     respx.post("http://ollama.test/api/chat").mock(
         return_value=httpx.Response(200, json={"unexpected": True})
     )
-    async with OllamaClient(settings) as c, pytest.raises(OllamaError):
-        await c.generate(prompt="hi")
+    async with OllamaClient(settings) as c:
+        with pytest.raises(OllamaError):
+            await c.generate(prompt="hi")

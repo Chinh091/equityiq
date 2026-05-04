@@ -9,12 +9,11 @@ Commands:
 from __future__ import annotations
 
 import asyncio
-from typing import Annotated
+import functools
+from collections.abc import Callable, Coroutine
+from typing import Annotated, Any, ParamSpec, TypeVar
 
 import typer
-from rich.console import Console
-from rich.table import Table
-
 from equityiq_ingestion import (
     Database,
     EdgarClient,
@@ -30,13 +29,19 @@ from equityiq_retrieval import (
     RetrievalSettings,
     TEIReranker,
 )
+from rich.console import Console
+from rich.table import Table
 
 app = typer.Typer(no_args_is_help=True, add_completion=False, help="EquityIQ CLI")
 console = Console()
 
+_P = ParamSpec("_P")
+_R = TypeVar("_R")
 
-def _async(fn):
-    def wrapper(*args, **kwargs):
+
+def _async(fn: Callable[_P, Coroutine[Any, Any, _R]]) -> Callable[_P, _R]:
+    @functools.wraps(fn)
+    def wrapper(*args: _P.args, **kwargs: _P.kwargs) -> _R:
         return asyncio.run(fn(*args, **kwargs))
 
     return wrapper
@@ -79,7 +84,9 @@ async def query(
     question: Annotated[str, typer.Argument(help="Natural-language question")],
     ticker: Annotated[str | None, typer.Option("--ticker", "-t")] = None,
     top_k: Annotated[int, typer.Option("--k", "-k")] = 8,
-    no_rerank: Annotated[bool, typer.Option("--no-rerank", help="Skip cross-encoder rerank")] = False,
+    no_rerank: Annotated[
+        bool, typer.Option("--no-rerank", help="Skip cross-encoder rerank")
+    ] = False,
     item: Annotated[
         str | None, typer.Option("--item", help="Restrict to item code, e.g. 1A,7")
     ] = None,
@@ -161,7 +168,7 @@ def _print_stats(stats: IngestStats) -> None:
             console.print(f"  - {e}")
 
 
-def _print_results(results) -> None:
+def _print_results(results: list[Any]) -> None:
     if not results:
         console.print("[yellow]no results[/yellow]")
         return

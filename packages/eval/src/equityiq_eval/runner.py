@@ -101,7 +101,7 @@ class EvalRunner:
                 scores=scores,
                 latency_s=time.perf_counter() - t0,
             )
-        except Exception as e:  # noqa: BLE001 — eval row should never crash full run
+        except Exception as e:
             log.warning("eval_row_failed", item_id=item.id, error=str(e))
             return EvalRowResult(
                 item_id=item.id,

@@ -11,7 +11,7 @@ def test_single_ranker_yields_decreasing_scores():
 def test_doc_in_both_rankers_outranks_single_appearance():
     fused = reciprocal_rank_fusion([[1, 2, 3], [3, 4, 5]], k=60)
     # 3 appears in both; should beat docs that appear in only one.
-    assert list(fused.keys())[0] in (1, 3)
+    assert next(iter(fused.keys())) in (1, 3)
     assert fused[3] > fused[5]
     assert fused[3] > fused[2]
 

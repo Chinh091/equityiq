@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from typing import Literal, Union
+from typing import Literal
 
 from pydantic import BaseModel
 
@@ -48,15 +48,15 @@ class FinalAnswerEvent(BaseModel):
     citations: list[str]
 
 
-AgentEvent = Union[
-    PlanEvent,
-    ToolCallEvent,
-    ToolResultEvent,
-    TokenEvent,
-    DraftEvent,
-    CritiqueEvent,
-    FinalAnswerEvent,
-]
+AgentEvent = (
+    PlanEvent
+    | ToolCallEvent
+    | ToolResultEvent
+    | TokenEvent
+    | DraftEvent
+    | CritiqueEvent
+    | FinalAnswerEvent
+)
 
 
 def serialize_event(event: AgentEvent) -> str:
