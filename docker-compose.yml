@@ -1,0 +1,129 @@
+name: equityiq
+
+x-restart: &restart
+  restart: unless-stopped
+
+services:
+  postgres:
+    <<: *restart
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-equityiq}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-equityiq_dev}
+      POSTGRES_DB: ${POSTGRES_DB:-equityiq}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+      - ./infra/postgres/init.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-equityiq}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  neo4j:
+    <<: *restart
+    image: neo4j:5-community
+    environment:
+      NEO4J_AUTH: ${NEO4J_USER:-neo4j}/${NEO4J_PASSWORD:-equityiq_dev}
+      NEO4J_PLUGINS: '["apoc"]'
+      NEO4J_dbms_security_procedures_unrestricted: apoc.*
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - neo4j-data:/data
+      - neo4j-logs:/logs
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost:7474 >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+
+  redis:
+    <<: *restart
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  ollama:
+    <<: *restart
+    image: ollama/ollama:latest
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama-data:/root/.ollama
+    environment:
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-30m}
+      OLLAMA_NUM_PARALLEL: "2"
+      OLLAMA_MAX_LOADED_MODELS: "2"
+    # Uncomment to enable NVIDIA GPU passthrough:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  tei-reranker:
+    <<: *restart
+    image: ghcr.io/huggingface/text-embeddings-inference:cpu-1.5
+    command: --model-id ${RERANKER_MODEL:-BAAI/bge-reranker-v2-m3}
+    ports:
+      - "8081:80"
+    volumes:
+      - tei-data:/data
+    environment:
+      HF_HOME: /data
+
+  langfuse-db:
+    <<: *restart
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: langfuse
+      POSTGRES_PASSWORD: langfuse_dev
+      POSTGRES_DB: langfuse
+    volumes:
+      - langfuse-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U langfuse"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  langfuse:
+    <<: *restart
+    image: langfuse/langfuse:2
+    depends_on:
+      langfuse-db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://langfuse:langfuse_dev@langfuse-db:5432/langfuse
+      NEXTAUTH_SECRET: change-me-dev-only
+      SALT: change-me-dev-only
+      NEXTAUTH_URL: http://localhost:3001
+      TELEMETRY_ENABLED: "false"
+      LANGFUSE_INIT_ORG_ID: equityiq
+      LANGFUSE_INIT_ORG_NAME: EquityIQ
+      LANGFUSE_INIT_PROJECT_ID: equityiq-dev
+      LANGFUSE_INIT_PROJECT_NAME: equityiq-dev
+    ports:
+      - "3001:3000"
+
+volumes:
+  pg-data:
+  neo4j-data:
+  neo4j-logs:
+  redis-data:
+  ollama-data:
+  tei-data:
+  langfuse-pg:

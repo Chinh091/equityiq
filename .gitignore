@@ -1,0 +1,61 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+.hypothesis/
+
+# Envs
+.venv/
+venv/
+.env
+.env.local
+*.local
+
+# uv
+.uv/
+
+# Build
+build/
+dist/
+
+# Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data (large/derived)
+data/raw/
+data/cache/
+data/embeddings/
+*.duckdb
+*.sqlite
+
+# Models / weights (use Ollama)
+*.gguf
+*.bin
+*.safetensors
+
+# Docker volumes (if mounted locally)
+.docker-data/
+
+# Node (web app)
+node_modules/
+.next/
+out/
+
+# Langfuse / logs
+logs/
+*.log

@@ -1,0 +1,74 @@
+[project]
+name = "equityiq"
+version = "0.1.0"
+description = "Multi-agent equity research platform on local Ollama"
+requires-python = ">=3.12"
+readme = "README.md"
+
+[tool.uv.workspace]
+members = ["apps/*", "packages/*"]
+
+[tool.uv.sources]
+equityiq-api = { workspace = true }
+equityiq-cli = { workspace = true }
+equityiq-llm = { workspace = true }
+equityiq-observability = { workspace = true }
+equityiq-retrieval = { workspace = true }
+equityiq-ingestion = { workspace = true }
+equityiq-agents = { workspace = true }
+equityiq-tools = { workspace = true }
+equityiq-eval = { workspace = true }
+
+[dependency-groups]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.24",
+    "pytest-cov>=6.0",
+    "respx>=0.21",
+    "pre-commit>=4.0",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["apps", "packages"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",       # pycodestyle + pyflakes
+    "I",                  # isort
+    "N",                  # pep8-naming
+    "UP",                 # pyupgrade
+    "B",                  # flake8-bugbear
+    "SIM",                # flake8-simplify
+    "RUF",                # ruff-specific
+    "ASYNC",              # async lint
+    "TID",                # tidy imports
+]
+ignore = ["E501"]  # line length handled by formatter
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]  # asserts ok in tests
+
+[tool.mypy]
+python_version = "3.12"
+strict = true
+warn_unused_ignores = true
+warn_redundant_casts = true
+disallow_untyped_decorators = false
+plugins = ["pydantic.mypy"]
+
+[[tool.mypy.overrides]]
+module = ["langfuse.*", "ollama.*", "ragas.*", "llama_index.*", "neo4j.*"]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["apps", "packages"]
+addopts = "-ra --strict-markers --strict-config"
+markers = [
+    "integration: requires running services (Postgres, Ollama, etc.)",
+    "slow: takes >5s",
+]

@@ -1,0 +1,60 @@
+# Phase-3 eval gate. Runs golden-set eval harness and blocks merge on metric regression
+# >--max-regression vs origin/main baseline.
+#
+# Required GitHub repository secrets:
+#   OLLAMA_BASE_URL       — URL of an Ollama instance reachable from CI runners
+#   LANGFUSE_HOST         — e.g. https://cloud.langfuse.com or self-hosted
+#   LANGFUSE_PUBLIC_KEY   — pk-lf-...
+#   LANGFUSE_SECRET_KEY   — sk-lf-...
+#
+# Baseline lookup uses `git show origin/main:eval-report.json`. First green run on main
+# seeds the baseline; subsequent PRs are gated against it.
+
+name: eval-gate
+
+on:
+  pull_request:
+    paths:
+      - "packages/agents/**"
+      - "packages/retrieval/**"
+      - "packages/eval/**"
+      - "packages/llm/**"
+      - "apps/api/**"
+
+jobs:
+  golden-eval:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # need origin/main history for --baseline-from-main
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+
+      - name: Sync
+        run: uv sync --all-packages --all-groups
+
+      - name: Run golden-set eval
+        env:
+          OLLAMA_BASE_URL: ${{ secrets.OLLAMA_BASE_URL }}
+          LANGFUSE_HOST: ${{ secrets.LANGFUSE_HOST }}
+          LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+          LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+        run: |
+          uv run python -m equityiq_eval.ci_gate \
+            --dataset packages/eval/golden/qa_2024.jsonl \
+            --baseline-from-main \
+            --max-regression 0.03
+
+      - name: Upload eval report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: eval-report
+          path: eval-report.json
+          if-no-files-found: ignore
