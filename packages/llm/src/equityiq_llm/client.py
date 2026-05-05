@@ -50,7 +50,7 @@ class OllamaClient:
 
     def _get_embedder(self) -> Any:
         if self._embedder is None:
-            from fastembed import TextEmbedding  # noqa: PLC0415
+            from fastembed import TextEmbedding
 
             self._embedder = TextEmbedding(model_name=self._settings.openrouter_embed_model)
         return self._embedder
