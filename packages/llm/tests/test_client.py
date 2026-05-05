@@ -5,7 +5,7 @@ import httpx
 import numpy as np
 import pytest
 import respx
-from equityiq_llm import LLMSettings, ModelTier, LLMClient
+from equityiq_llm import LLMClient, LLMSettings, ModelTier
 from equityiq_llm.client import LLMError
 
 BASE = "https://openrouter.ai/api/v1"

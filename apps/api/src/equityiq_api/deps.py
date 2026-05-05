@@ -4,7 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from equityiq_agents import AgentLoop, AgentSettings, RetrieveTool
-from equityiq_llm import LLMSettings, ModelRouter, LLMClient
+from equityiq_llm import LLMClient, LLMSettings, ModelRouter
 from equityiq_retrieval import HybridRetriever, RetrievalSettings, TEIReranker
 from fastapi import FastAPI, Request
 

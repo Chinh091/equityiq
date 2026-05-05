@@ -3,9 +3,9 @@ from equityiq_llm.config import LLMSettings, ModelTier
 from equityiq_llm.router import ModelRouter, RouteDecision
 
 __all__ = [
+    "LLMClient",
     "LLMSettings",
     "ModelRouter",
     "ModelTier",
-    "LLMClient",
     "RouteDecision",
 ]
