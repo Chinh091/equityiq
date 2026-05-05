@@ -1,6 +1,6 @@
 # EquityIQ
 
-AI-powered equity research assistant that reads SEC filings and answers analyst-style questions in plain English. Ask "what are NVDA's data center risk factors?" — it retrieves the relevant 10-K passages, reasons across them, and streams a grounded thesis with citations.
+AI-powered equity research assistant that reads SEC filings and answers analyst-style questions in plain English. Ask "what are NVDA's data center risk factors?" and it retrieves the relevant 10-K passages, reasons across them, and streams a grounded thesis with citations.
 
 Designed, built, and maintained solo as a portfolio project demonstrating production-shape AI engineering.
 
@@ -9,7 +9,7 @@ Designed, built, and maintained solo as a portfolio project demonstrating produc
 - Multi-agent pipeline: planner, retriever, analyst, and critic agents working in sequence
 - Hybrid search: vector similarity + full-text search + cross-encoder reranking, fused with RRF
 - SEC EDGAR ingestion: fetches, parses, and chunks real filings into a queryable knowledge base
-- LLM-as-judge CI gate: every PR is regression-tested against a golden Q/A set — a metric drop >3% fails the build
+- LLM-as-judge CI gate: every PR is regression-tested against a golden Q/A set; a metric drop >3% fails the build
 - Fully local: runs on Ollama (no OpenAI key needed), observable via self-hosted Langfuse tracing
 - 7-service Docker Compose stack: Postgres + pgvector, Neo4j, Redis, TEI reranker, Langfuse, Ollama, FastAPI
 

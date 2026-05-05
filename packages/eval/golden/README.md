@@ -15,7 +15,7 @@ Each `.jsonl` row is a `GoldenItem` (see `equityiq_eval.types`):
 ```
 
 `expected_accessions` powers the deterministic `context_precision` metric. Leave empty
-when the answer is not tied to a specific filing — precision will return 1.0.
+when the answer is not tied to a specific filing; precision will return 1.0.
 
 `qa_2024.jsonl` is a starter set of 10 items spanning sectors. Expand to ~200 before
 relying on the CI gate as a real regression signal.
