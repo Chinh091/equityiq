@@ -10,8 +10,8 @@ Designed, built, and maintained solo as a portfolio project demonstrating produc
 - Hybrid search: vector similarity + full-text search + cross-encoder reranking, fused with RRF
 - SEC EDGAR ingestion: fetches, parses, and chunks real filings into a queryable knowledge base
 - LLM-as-judge CI gate: every PR is regression-tested against a golden Q/A set; a metric drop >3% fails the build
-- Fully local: runs on Ollama (no OpenAI key needed), observable via self-hosted Langfuse tracing
-- 7-service Docker Compose stack: Postgres + pgvector, Neo4j, Redis, TEI reranker, Langfuse, Ollama, FastAPI
+- Zero local GPU required: LLM runs via OpenRouter free tier, embeddings via fastembed ONNX runtime
+- 7-service Docker Compose stack: Postgres + pgvector, Neo4j, Redis, TEI reranker, Langfuse, FastAPI
 
 ## Skills demonstrated
 
@@ -40,7 +40,7 @@ equityiq/
 │   ├── api/             FastAPI gateway (/health, /retrieve, /thesis/stream)
 │   └── cli/             `equityiq` CLI: ingest, query, health
 ├── packages/
-│   ├── llm/             Ollama async client + ModelRouter
+│   ├── llm/             OpenRouter LLM client + ModelRouter
 │   ├── observability/   structlog + Langfuse decorators
 │   ├── ingestion/       EDGAR client, SEC parsers, semantic chunker, pipeline
 │   ├── retrieval/       Hybrid retriever, RRF fusion, TEI reranker
@@ -55,9 +55,8 @@ equityiq/
 
 ```bash
 make install            # uv sync --all-packages
-cp .env.example .env    # fill secrets if any
-make up                 # docker compose up -d
 cp .env.example .env    # add OPENROUTER_API_KEY (free at openrouter.ai)
+make up                 # docker compose up -d
 make api                # uvicorn dev server
 ```
 
