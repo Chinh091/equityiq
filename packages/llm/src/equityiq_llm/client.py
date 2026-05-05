@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import json
 from collections.abc import AsyncIterator, Mapping
 from typing import Any
@@ -20,7 +21,7 @@ class OllamaError(RuntimeError):
 
 
 class OllamaClient:
-    """Async Ollama HTTP client. Streaming + non-streaming + embeddings."""
+    """OpenRouter-backed LLM client. Uses fastembed locally for embeddings."""
 
     def __init__(
         self,
@@ -31,9 +32,11 @@ class OllamaClient:
         self._settings = settings or LLMSettings()
         self._owns_client = client is None
         self._client = client or httpx.AsyncClient(
-            base_url=self._settings.ollama_base_url,
-            timeout=self._settings.ollama_request_timeout_s,
+            base_url=self._settings.openrouter_base_url,
+            headers={"Authorization": f"Bearer {self._settings.openrouter_api_key}"},
+            timeout=self._settings.openrouter_request_timeout_s,
         )
+        self._embedder: Any = None
 
     async def __aenter__(self) -> OllamaClient:
         return self
@@ -44,6 +47,14 @@ class OllamaClient:
     async def aclose(self) -> None:
         if self._owns_client:
             await self._client.aclose()
+
+    def _get_embedder(self) -> Any:
+        if self._embedder is None:
+            from fastembed import TextEmbedding  # noqa: PLC0415
+            self._embedder = TextEmbedding(
+                model_name=self._settings.openrouter_embed_model
+            )
+        return self._embedder
 
     @retry(
         retry=retry_if_exception_type((httpx.TransportError, httpx.HTTPStatusError)),
@@ -61,10 +72,13 @@ class OllamaClient:
         format: str | Mapping[str, Any] | None = None,
     ) -> str:
         body = self._chat_body(prompt, tier, system, options, format, stream=False)
-        resp = await self._client.post("/api/chat", json=body)
+        resp = await self._client.post("/chat/completions", json=body)
         resp.raise_for_status()
         data = resp.json()
-        msg = data.get("message", {}).get("content")
+        try:
+            msg = data["choices"][0]["message"]["content"]
+        except (KeyError, IndexError) as e:
+            raise OllamaError(f"unexpected response shape: {data!r}") from e
         if not isinstance(msg, str):
             raise OllamaError(f"unexpected response shape: {data!r}")
         return msg
@@ -78,33 +92,31 @@ class OllamaClient:
         options: Mapping[str, Any] | None = None,
     ) -> AsyncIterator[str]:
         body = self._chat_body(prompt, tier, system, options, format=None, stream=True)
-        async with self._client.stream("POST", "/api/chat", json=body) as resp:
+        async with self._client.stream("POST", "/chat/completions", json=body) as resp:
             resp.raise_for_status()
             async for line in resp.aiter_lines():
-                if not line:
+                if not line.startswith("data: "):
                     continue
+                data = line[6:]
+                if data == "[DONE]":
+                    return
                 try:
-                    chunk = json.loads(line)
+                    chunk = json.loads(data)
                 except json.JSONDecodeError as e:
-                    raise OllamaError(f"bad ndjson chunk: {line!r}") from e
-                content = chunk.get("message", {}).get("content")
+                    raise OllamaError(f"bad SSE chunk: {line!r}") from e
+                content = (
+                    chunk.get("choices", [{}])[0].get("delta", {}).get("content")
+                )
                 if content:
                     yield content
-                if chunk.get("done"):
-                    return
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
-        body = {
-            "model": self._settings.model_for(ModelTier.EMBED),
-            "input": texts,
-        }
-        resp = await self._client.post("/api/embed", json=body)
-        resp.raise_for_status()
-        data = resp.json()
-        embeddings = data.get("embeddings")
-        if not isinstance(embeddings, list):
-            raise OllamaError(f"unexpected embed response: {data!r}")
-        return embeddings
+        loop = asyncio.get_event_loop()
+        embedder = self._get_embedder()
+        embeddings = await loop.run_in_executor(
+            None, lambda: list(embedder.embed(texts))
+        )
+        return [e.tolist() for e in embeddings]
 
     def _chat_body(
         self,
@@ -124,10 +136,11 @@ class OllamaClient:
             "model": self._settings.model_for(tier),
             "messages": messages,
             "stream": stream,
-            "keep_alive": self._settings.ollama_keep_alive,
         }
         if options:
-            body["options"] = dict(options)
-        if format is not None:
-            body["format"] = format
+            for key in ("temperature", "top_p", "max_tokens", "top_k"):
+                if key in options:
+                    body[key] = options[key]
+        if format == "json":
+            body["response_format"] = {"type": "json_object"}
         return body

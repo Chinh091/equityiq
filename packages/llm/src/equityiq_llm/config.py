@@ -13,21 +13,21 @@ class ModelTier(StrEnum):
 class LLMSettings(BaseSettings):
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")
 
-    ollama_base_url: str = "http://localhost:11434"
-    ollama_primary_model: str = "llama3.3:70b-instruct-q4_K_M"
-    ollama_fallback_model: str = "qwen2.5:32b-instruct"
-    ollama_judge_model: str = "qwen2.5:32b-instruct"
-    ollama_embed_model: str = "nomic-embed-text:v1.5"
-    ollama_keep_alive: str = "30m"
-    ollama_request_timeout_s: float = 300.0
+    openrouter_api_key: str = ""
+    openrouter_base_url: str = "https://openrouter.ai/api/v1"
+    openrouter_primary_model: str = "openai/gpt-oss-120b:free"
+    openrouter_fallback_model: str = "openai/gpt-oss-20b:free"
+    openrouter_judge_model: str = "openai/gpt-oss-20b:free"
+    openrouter_embed_model: str = "nomic-ai/nomic-embed-text-v1.5"
+    openrouter_request_timeout_s: float = 120.0
 
     def model_for(self, tier: ModelTier) -> str:
         match tier:
             case ModelTier.PRIMARY:
-                return self.ollama_primary_model
+                return self.openrouter_primary_model
             case ModelTier.FALLBACK:
-                return self.ollama_fallback_model
+                return self.openrouter_fallback_model
             case ModelTier.JUDGE:
-                return self.ollama_judge_model
+                return self.openrouter_judge_model
             case ModelTier.EMBED:
-                return self.ollama_embed_model
+                return self.openrouter_embed_model

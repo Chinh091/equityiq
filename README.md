@@ -1,15 +1,28 @@
 # EquityIQ
 
-Multi-agent equity research platform on local Ollama. Ingests SEC EDGAR filings, runs hybrid retrieval (pgvector + Postgres FTS + cross-encoder rerank), and orchestrates a planner→retriever→analyst→critic agent loop with LLM-as-judge evaluation gating CI.
+AI-powered equity research assistant that reads SEC filings and answers analyst-style questions in plain English. Ask "what are NVDA's data center risk factors?" — it retrieves the relevant 10-K passages, reasons across them, and streams a grounded thesis with citations.
 
-Built as a portfolio project demonstrating production-shape AI engineering: uv workspace monorepo, async Python 3.12, FastAPI streaming, golden-set regression testing, Langfuse tracing, Docker Compose stack.
+Designed, built, and maintained solo as a portfolio project demonstrating production-shape AI engineering.
+
+## Built solo
+
+- Multi-agent pipeline: planner, retriever, analyst, and critic agents working in sequence
+- Hybrid search: vector similarity + full-text search + cross-encoder reranking, fused with RRF
+- SEC EDGAR ingestion: fetches, parses, and chunks real filings into a queryable knowledge base
+- LLM-as-judge CI gate: every PR is regression-tested against a golden Q/A set — a metric drop >3% fails the build
+- Fully local: runs on Ollama (no OpenAI key needed), observable via self-hosted Langfuse tracing
+- 7-service Docker Compose stack: Postgres + pgvector, Neo4j, Redis, TEI reranker, Langfuse, Ollama, FastAPI
+
+## Skills demonstrated
+
+`Python 3.12` `FastAPI` `async/await` `RAG pipelines` `pgvector` `hybrid search` `multi-agent systems` `LLM evaluation` `SEC EDGAR` `Docker Compose` `uv monorepo` `CI/CD` `Mypy strict` `Pytest`
 
 ## Stack
 
 | Layer | Choice |
-|------|--------|
-| LLM serving | Ollama (Llama 3.3 70B primary, Qwen 2.5 32B fallback/judge) |
-| Embeddings | nomic-embed-text v1.5 (768d) |
+|-------|--------|
+| LLM serving | OpenRouter (GPT-OSS 120B free tier, zero local GPU required) |
+| Embeddings | nomic-embed-text v1.5 via fastembed (ONNX, runs locally, no GPU) |
 | Reranker | TEI + BAAI/bge-reranker-v2-m3 |
 | Storage | Postgres 16 + pgvector + HNSW + GIN |
 | Graph | Neo4j (entity + filing relationships) |
@@ -42,9 +55,9 @@ equityiq/
 
 ```bash
 make install            # uv sync --all-packages
-cp .env.example .env    # then fill secrets if any
+cp .env.example .env    # fill secrets if any
 make up                 # docker compose up -d
-make models             # pull Ollama models
+cp .env.example .env    # add OPENROUTER_API_KEY (free at openrouter.ai)
 make api                # uvicorn dev server
 ```
 
@@ -75,15 +88,15 @@ uv run python -m equityiq_eval.ci_gate \
   --max-regression 0.03
 ```
 
-Metrics — `faithfulness` (LLM-as-judge), `answer_relevance` (LLM-as-judge), `context_precision` (deterministic set math). Any metric regressing >3% vs `origin/main`'s last green report fails the build.
+Metrics: `faithfulness` (LLM-as-judge), `answer_relevance` (LLM-as-judge), `context_precision` (deterministic set math). Any metric regressing >3% vs `origin/main`'s last green run fails the build.
 
 ## Status
 
 | Phase | Scope | Status |
-|------|-------|--------|
-| 0 | Repo scaffold + CI + docker stack | done |
-| 2 | Ingestion + retrieval + CLI + /retrieve | done |
-| 3 | Agent loop + eval harness + /thesis/stream + CI gate | done |
+|-------|-------|--------|
+| 1 | Repo scaffold + CI + Docker stack | done |
+| 2 | Ingestion + retrieval + CLI + `/retrieve` | done |
+| 3 | Agent loop + eval harness + `/thesis/stream` + CI gate | done |
 | 4 | Knowledge graph (Neo4j) + entity linking | planned |
 | 5 | Quality-aware learned router | planned |
 
@@ -94,7 +107,7 @@ make fmt            # ruff format + autofix
 make lint           # ruff check
 make typecheck      # mypy strict
 make test           # pytest (excludes integration)
-make test-int      # integration tests (needs `make up`)
+make test-int       # integration tests (needs `make up`)
 ```
 
 ## License
