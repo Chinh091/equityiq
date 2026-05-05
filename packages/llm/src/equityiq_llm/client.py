@@ -51,9 +51,8 @@ class OllamaClient:
     def _get_embedder(self) -> Any:
         if self._embedder is None:
             from fastembed import TextEmbedding  # noqa: PLC0415
-            self._embedder = TextEmbedding(
-                model_name=self._settings.openrouter_embed_model
-            )
+
+            self._embedder = TextEmbedding(model_name=self._settings.openrouter_embed_model)
         return self._embedder
 
     @retry(
@@ -104,18 +103,14 @@ class OllamaClient:
                     chunk = json.loads(data)
                 except json.JSONDecodeError as e:
                     raise OllamaError(f"bad SSE chunk: {line!r}") from e
-                content = (
-                    chunk.get("choices", [{}])[0].get("delta", {}).get("content")
-                )
+                content = chunk.get("choices", [{}])[0].get("delta", {}).get("content")
                 if content:
                     yield content
 
     async def embed(self, texts: list[str]) -> list[list[float]]:
         loop = asyncio.get_event_loop()
         embedder = self._get_embedder()
-        embeddings = await loop.run_in_executor(
-            None, lambda: list(embedder.embed(texts))
-        )
+        embeddings = await loop.run_in_executor(None, lambda: list(embedder.embed(texts)))
         return [e.tolist() for e in embeddings]
 
     def _chat_body(
