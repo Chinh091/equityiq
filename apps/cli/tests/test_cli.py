@@ -66,7 +66,7 @@ def test_ingest_command_runs_pipeline(runner: CliRunner) -> None:
     with (
         patch("equityiq_cli.main.Database", return_value=db),
         patch("equityiq_cli.main.EdgarClient", return_value=_ctx(MagicMock())),
-        patch("equityiq_cli.main.OllamaClient", return_value=_ctx(MagicMock())),
+        patch("equityiq_cli.main.LLMClient", return_value=_ctx(MagicMock())),
         patch("equityiq_cli.main.IngestionPipeline", return_value=pipeline),
     ):
         result = runner.invoke(app, ["ingest", "--ticker", "AAPL", "--limit", "2"])
@@ -87,7 +87,7 @@ def test_query_command_prints_results(runner: CliRunner) -> None:
     retriever.search = AsyncMock(return_value=[_retrieval()])
 
     with (
-        patch("equityiq_cli.main.OllamaClient", return_value=_ctx(MagicMock())),
+        patch("equityiq_cli.main.LLMClient", return_value=_ctx(MagicMock())),
         patch("equityiq_cli.main.TEIReranker", return_value=_ctx(MagicMock())),
         patch("equityiq_cli.main.HybridRetriever", return_value=retriever),
     ):
@@ -110,7 +110,7 @@ def test_query_command_no_rerank_flag(runner: CliRunner) -> None:
     retriever.search = AsyncMock(return_value=[])
 
     with (
-        patch("equityiq_cli.main.OllamaClient", return_value=_ctx(MagicMock())),
+        patch("equityiq_cli.main.LLMClient", return_value=_ctx(MagicMock())),
         patch("equityiq_cli.main.TEIReranker", return_value=_ctx(MagicMock())),
         patch("equityiq_cli.main.HybridRetriever", return_value=retriever),
     ):
@@ -134,7 +134,7 @@ def test_health_reports_per_component_status(runner: CliRunner) -> None:
     reranker.rerank = AsyncMock(return_value=[])
 
     with (
-        patch("equityiq_cli.main.OllamaClient", return_value=_ctx(ollama)),
+        patch("equityiq_cli.main.LLMClient", return_value=_ctx(ollama)),
         patch("equityiq_cli.main.Database", return_value=db),
         patch("equityiq_cli.main.TEIReranker", return_value=_ctx(reranker)),
     ):
@@ -158,7 +158,7 @@ def test_health_reports_failures_without_crashing(runner: CliRunner) -> None:
     reranker.rerank = AsyncMock(side_effect=RuntimeError("tei down"))
 
     with (
-        patch("equityiq_cli.main.OllamaClient", return_value=_ctx(ollama)),
+        patch("equityiq_cli.main.LLMClient", return_value=_ctx(ollama)),
         patch("equityiq_cli.main.Database", return_value=db),
         patch("equityiq_cli.main.TEIReranker", return_value=_ctx(reranker)),
     ):

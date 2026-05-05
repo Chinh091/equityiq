@@ -33,7 +33,7 @@ from contextlib import asynccontextmanager
 from dataclasses import dataclass, field
 
 import asyncpg
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_observability import observed
 from pydantic import BaseModel, Field
 
@@ -94,7 +94,7 @@ class HybridRetriever:
     def __init__(
         self,
         *,
-        llm: OllamaClient,
+        llm: LLMClient,
         reranker: TEIReranker | None = None,
         settings: RetrievalSettings | None = None,
         pool: asyncpg.Pool | None = None,

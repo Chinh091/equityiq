@@ -7,7 +7,7 @@ from collections.abc import Awaitable, Callable
 from pathlib import Path
 from statistics import mean
 
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_observability import get_logger, observed
 from equityiq_retrieval import HybridRetriever
 from equityiq_retrieval.hybrid import RetrievalQuery
@@ -58,7 +58,7 @@ class EvalRunner:
         self,
         *,
         retriever: HybridRetriever,
-        llm: OllamaClient,
+        llm: LLMClient,
         settings: EvalSettings | None = None,
         answer_fn: AnswerFn | None = None,
     ) -> None:

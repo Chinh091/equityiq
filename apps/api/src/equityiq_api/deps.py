@@ -4,11 +4,11 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from equityiq_agents import AgentLoop, AgentSettings, RetrieveTool
-from equityiq_llm import LLMSettings, ModelRouter, OllamaClient
+from equityiq_llm import LLMSettings, ModelRouter, LLMClient
 from equityiq_retrieval import HybridRetriever, RetrievalSettings, TEIReranker
 from fastapi import FastAPI, Request
 
-OLLAMA_KEY = "ollama_client"
+LLM_KEY = "llm_client"
 ROUTER_KEY = "model_router"
 RETRIEVER_KEY = "retriever"
 RERANKER_KEY = "reranker"
@@ -20,7 +20,7 @@ async def lifespan_state(app: FastAPI) -> AsyncIterator[None]:
     llm_settings = LLMSettings()
     retr_settings = RetrievalSettings()
 
-    ollama = OllamaClient(llm_settings)
+    ollama = LLMClient(llm_settings)
     reranker = TEIReranker(retr_settings)
     retriever = HybridRetriever(llm=ollama, reranker=reranker, settings=retr_settings)
     agent_loop = AgentLoop(
@@ -29,7 +29,7 @@ async def lifespan_state(app: FastAPI) -> AsyncIterator[None]:
         settings=AgentSettings(),
     )
 
-    app.state.__dict__[OLLAMA_KEY] = ollama
+    app.state.__dict__[LLM_KEY] = ollama
     app.state.__dict__[ROUTER_KEY] = ModelRouter()
     app.state.__dict__[RERANKER_KEY] = reranker
     app.state.__dict__[RETRIEVER_KEY] = retriever
@@ -43,8 +43,8 @@ async def lifespan_state(app: FastAPI) -> AsyncIterator[None]:
         await ollama.aclose()
 
 
-def get_ollama(request: Request) -> OllamaClient:
-    return request.app.state.__dict__[OLLAMA_KEY]  # type: ignore[no-any-return]
+def get_ollama(request: Request) -> LLMClient:
+    return request.app.state.__dict__[LLM_KEY]  # type: ignore[no-any-return]
 
 
 def get_router(request: Request) -> ModelRouter:

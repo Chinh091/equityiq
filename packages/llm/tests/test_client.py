@@ -5,8 +5,8 @@ import httpx
 import numpy as np
 import pytest
 import respx
-from equityiq_llm import LLMSettings, ModelTier, OllamaClient
-from equityiq_llm.client import OllamaError
+from equityiq_llm import LLMSettings, ModelTier, LLMClient
+from equityiq_llm.client import LLMError
 
 BASE = "https://openrouter.ai/api/v1"
 
@@ -35,7 +35,7 @@ def _chat_response(content: str) -> httpx.Response:
 @respx.mock
 async def test_generate_returns_message_content(settings: LLMSettings) -> None:
     respx.post(f"{BASE}/chat/completions").mock(return_value=_chat_response("hello"))
-    async with OllamaClient(settings) as c:
+    async with LLMClient(settings) as c:
         out = await c.generate(prompt="hi", tier=ModelTier.FALLBACK)
     assert out == "hello"
 
@@ -44,7 +44,7 @@ async def test_generate_returns_message_content(settings: LLMSettings) -> None:
 @respx.mock
 async def test_generate_uses_correct_model_for_tier(settings: LLMSettings) -> None:
     route = respx.post(f"{BASE}/chat/completions").mock(return_value=_chat_response("ok"))
-    async with OllamaClient(settings) as c:
+    async with LLMClient(settings) as c:
         await c.generate(prompt="hi", tier=ModelTier.PRIMARY)
     body = json.loads(route.calls[0].request.content)
     assert body["model"] == "primary-x"
@@ -62,7 +62,7 @@ async def test_stream_yields_chunks_until_done(settings: LLMSettings) -> None:
     respx.post(f"{BASE}/chat/completions").mock(
         return_value=httpx.Response(200, content=sse_lines.encode())
     )
-    async with OllamaClient(settings) as c:
+    async with LLMClient(settings) as c:
         out = [tok async for tok in c.stream(prompt="hi")]
     assert "".join(out) == "hello"
 
@@ -71,8 +71,8 @@ async def test_stream_yields_chunks_until_done(settings: LLMSettings) -> None:
 async def test_embed_returns_vectors(settings: LLMSettings) -> None:
     mock_embedder = MagicMock()
     mock_embedder.embed.return_value = [np.array([0.1, 0.2])]
-    with patch.object(OllamaClient, "_get_embedder", return_value=mock_embedder):
-        async with OllamaClient(settings) as c:
+    with patch.object(LLMClient, "_get_embedder", return_value=mock_embedder):
+        async with LLMClient(settings) as c:
             out = await c.embed(["hello"])
     assert out == [[0.1, 0.2]]
 
@@ -83,6 +83,6 @@ async def test_unexpected_shape_raises(settings: LLMSettings) -> None:
     respx.post(f"{BASE}/chat/completions").mock(
         return_value=httpx.Response(200, json={"unexpected": True})
     )
-    async with OllamaClient(settings) as c:
-        with pytest.raises(OllamaError):
+    async with LLMClient(settings) as c:
+        with pytest.raises(LLMError):
             await c.generate(prompt="hi")

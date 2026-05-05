@@ -16,11 +16,11 @@ from tenacity import (
 from equityiq_llm.config import LLMSettings, ModelTier
 
 
-class OllamaError(RuntimeError):
+class LLMError(RuntimeError):
     pass
 
 
-class OllamaClient:
+class LLMClient:
     """OpenRouter-backed LLM client. Uses fastembed locally for embeddings."""
 
     def __init__(
@@ -38,7 +38,7 @@ class OllamaClient:
         )
         self._embedder: Any = None
 
-    async def __aenter__(self) -> OllamaClient:
+    async def __aenter__(self) -> LLMClient:
         return self
 
     async def __aexit__(self, *_: object) -> None:
@@ -77,9 +77,9 @@ class OllamaClient:
         try:
             msg = data["choices"][0]["message"]["content"]
         except (KeyError, IndexError) as e:
-            raise OllamaError(f"unexpected response shape: {data!r}") from e
+            raise LLMError(f"unexpected response shape: {data!r}") from e
         if not isinstance(msg, str):
-            raise OllamaError(f"unexpected response shape: {data!r}")
+            raise LLMError(f"unexpected response shape: {data!r}")
         return msg
 
     async def stream(
@@ -102,7 +102,7 @@ class OllamaClient:
                 try:
                     chunk = json.loads(data)
                 except json.JSONDecodeError as e:
-                    raise OllamaError(f"bad SSE chunk: {line!r}") from e
+                    raise LLMError(f"bad SSE chunk: {line!r}") from e
                 content = chunk.get("choices", [{}])[0].get("delta", {}).get("content")
                 if content:
                     yield content

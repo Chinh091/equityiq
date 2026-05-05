@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator
 
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_observability import get_logger
 from equityiq_retrieval.types import RetrievalResult
 
@@ -41,7 +41,7 @@ class AgentLoop:
     def __init__(
         self,
         *,
-        llm: OllamaClient,
+        llm: LLMClient,
         retrieve: RetrieveTool,
         settings: AgentSettings | None = None,
     ) -> None:

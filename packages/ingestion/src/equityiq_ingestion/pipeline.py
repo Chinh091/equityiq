@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_observability import get_logger, observed
 
 from equityiq_ingestion.chunker import Chunk, SemanticChunker
@@ -41,7 +41,7 @@ class IngestionPipeline:
         self,
         *,
         edgar: EdgarClient,
-        llm: OllamaClient,
+        llm: LLMClient,
         db: Database,
         chunker: SemanticChunker | None = None,
         settings: IngestionSettings | None = None,

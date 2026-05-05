@@ -21,7 +21,7 @@ from equityiq_ingestion import (
     IngestionPipeline,
     IngestStats,
 )
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_observability import configure_logging, shutdown_langfuse
 from equityiq_retrieval import (
     HybridRetriever,
@@ -67,7 +67,7 @@ async def ingest(
     db = Database()
     await db.connect()
     try:
-        async with EdgarClient() as edgar, OllamaClient() as llm:
+        async with EdgarClient() as edgar, LLMClient() as llm:
             pipeline = IngestionPipeline(edgar=edgar, llm=llm, db=db)
             stats: IngestStats = await pipeline.run(
                 ticker=ticker.upper(), forms=form_types, limit=limit
@@ -95,7 +95,7 @@ async def query(
     settings = RetrievalSettings()
     item_codes = [c.strip() for c in item.split(",")] if item else None
 
-    async with OllamaClient() as llm, TEIReranker(settings) as reranker:
+    async with LLMClient() as llm, TEIReranker(settings) as reranker:
         retriever = HybridRetriever(llm=llm, reranker=reranker, settings=settings)
         try:
             await retriever.connect()
@@ -121,7 +121,7 @@ async def health() -> None:
     """Smoke-check Ollama generate + DB connect + reranker."""
     ok: dict[str, str] = {}
     try:
-        async with OllamaClient() as c:
+        async with LLMClient() as c:
             txt = await c.generate(prompt="say ok in one word")
             ok["ollama"] = f"ok: {txt[:32]}"
     except Exception as e:

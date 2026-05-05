@@ -4,7 +4,7 @@ import json
 import re
 from typing import Any
 
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_llm.config import ModelTier
 
 PLANNER_SYSTEM = """You decompose an equity research question into 1-{max_subqueries} focused
@@ -28,7 +28,7 @@ Faithfulness 1.0 = every claim cited and supported. Faithfulness 0.0 = hallucina
 _SCORE_RE = re.compile(r'"faithfulness"\s*:\s*([0-9]*\.?[0-9]+)')
 
 
-async def plan(llm: OllamaClient, *, question: str, max_subqueries: int) -> list[str]:
+async def plan(llm: LLMClient, *, question: str, max_subqueries: int) -> list[str]:
     raw = await llm.generate(
         prompt=question,
         tier=ModelTier.PRIMARY,
@@ -51,7 +51,7 @@ def _parse_subqueries(raw: str) -> list[str]:
     return []
 
 
-async def analyze(llm: OllamaClient, *, question: str, contexts: list[tuple[str, str]]) -> str:
+async def analyze(llm: LLMClient, *, question: str, contexts: list[tuple[str, str]]) -> str:
     """Contexts: list of (accession, text)."""
     formatted = "\n\n".join(f"[{acc}]\n{txt}" for acc, txt in contexts)
     prompt = f"Question: {question}\n\nContexts:\n{formatted}\n\nWrite the analyst note now."
@@ -64,7 +64,7 @@ async def analyze(llm: OllamaClient, *, question: str, contexts: list[tuple[str,
 
 
 async def critique(
-    llm: OllamaClient, *, draft: str, contexts: list[tuple[str, str]]
+    llm: LLMClient, *, draft: str, contexts: list[tuple[str, str]]
 ) -> tuple[float, str]:
     formatted = "\n\n".join(f"[{acc}]\n{txt}" for acc, txt in contexts)
     prompt = f"Draft:\n{draft}\n\nContexts:\n{formatted}"

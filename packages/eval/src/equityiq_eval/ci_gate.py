@@ -19,7 +19,7 @@ import subprocess
 from pathlib import Path
 
 import typer
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_retrieval import HybridRetriever
 from equityiq_retrieval.reranker import TEIReranker
 from rich.console import Console
@@ -88,7 +88,7 @@ async def _run(
     dataset: Path,
     settings: EvalSettings,
 ) -> EvalReport:
-    llm = OllamaClient()
+    llm = LLMClient()
     reranker = TEIReranker()
     retriever = HybridRetriever(llm=llm, reranker=reranker)
     try:

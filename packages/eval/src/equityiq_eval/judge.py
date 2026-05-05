@@ -4,7 +4,7 @@ import json
 import re
 from dataclasses import dataclass
 
-from equityiq_llm import OllamaClient
+from equityiq_llm import LLMClient
 from equityiq_llm.config import ModelTier
 
 from equityiq_eval.types import JudgeScore
@@ -73,7 +73,7 @@ class _JudgePrompt:
 class LLMJudge:
     """LLM-as-judge wrapper. Uses ModelTier.JUDGE."""
 
-    def __init__(self, llm: OllamaClient, *, temperature: float = 0.0) -> None:
+    def __init__(self, llm: LLMClient, *, temperature: float = 0.0) -> None:
         self._llm = llm
         self._temperature = temperature
 
